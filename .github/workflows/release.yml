@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    
+    - name: Build for Linux
+      run: |
+        GOOS=linux GOARCH=amd64 go build -o customproto-linux-amd64 .
+        GOOS=linux GOARCH=arm64 go build -o customproto-linux-arm64 .
+    
+    - name: Build for Windows
+      run: |
+        GOOS=windows GOARCH=amd64 go build -o customproto-windows-amd64.exe .
+    
+    - name: Build for macOS
+      run: |
+        GOOS=darwin GOARCH=amd64 go build -o customproto-darwin-amd64 .
+        GOOS=darwin GOARCH=arm64 go build -o customproto-darwin-arm64 .
+    
+    - name: Upload Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          customproto-linux-amd64
+          customproto-linux-arm64
+          customproto-windows-amd64.exe
+          customproto-darwin-amd64
+          customproto-darwin-arm64
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
