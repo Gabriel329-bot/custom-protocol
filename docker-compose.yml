@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  customproto:
+    build: .
+    image: customproto:latest
+    container_name: customproto-vpn
+    ports:
+      - "443:443"
+    environment:
+      - MODE=server
+      - SERVER_NAME=www.microsoft.com
+      - FINGERPRINT=Chrome
+      - OBFUSCATION=3
+    volumes:
+      - ./data:/app
+    networks:
+      - vpn-net
+    restart: unless-stopped
+   privileged: true
+
+  client:
+    image: customproto:latest
+    container_name: customproto-client
+    depends_on:
+      - customproto
+    environment:
+      - MODE=client
+      - SERVER_HOST=customproto
+      - SERVER_PORT=443
+      - SERVER_NAME=www.microsoft.com
+      - FINGERPRINT=Chrome
+    networks:
+      - vpn-net
+
+networks:
+  vpn-net:
+    driver: bridge
